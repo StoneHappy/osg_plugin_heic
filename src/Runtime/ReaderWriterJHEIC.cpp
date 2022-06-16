@@ -10,6 +10,7 @@
 
 #include <sstream>
 #include <iostream>
+#include <fstream>
 
 #if defined(_MSC_VER) && defined(OSG_DISABLE_MSVC_WARNINGS)
 // disable "structure was padded due to __declspec(align())
@@ -81,6 +82,9 @@ public:
     ReadResult readHEICStream(std::istream& fin) const
     {
         std::cout << "read heic!" << std::endl;
+        std::ofstream out("temp.heic", std::ios::binary);
+        out << fin.rdbuf();
+        out.close();
         osg::ref_ptr<osg::Image> pOsgImage = new osg::Image;
         return pOsgImage.release();
     }
