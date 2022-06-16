@@ -11,6 +11,7 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
+#include <libheif/heif.h>
 
 #if defined(_MSC_VER) && defined(OSG_DISABLE_MSVC_WARNINGS)
 // disable "structure was padded due to __declspec(align())
@@ -59,7 +60,7 @@
 #if defined(_MSC_VER) && defined(OSG_DISABLE_MSVC_WARNINGS)
 #pragma warning( disable : 4611 )
 #endif
-
+#define LIBHEIF_TEST_ERROR(func, ...) if ((func) != heif_error_code::heif_error_Ok) {std::cout << __VA_ARGS__ << std::endl;}
 class ReaderWriterHEIC : public osgDB::ReaderWriter
 {
     WriteResult::WriteStatus write_JPEG_file(std::ostream& fout, const osg::Image& img, int quality = 100) const
@@ -86,7 +87,7 @@ public:
         out << fin.rdbuf();
         out.close();
         osg::ref_ptr<osg::Image> pOsgImage = new osg::Image;
-        return pOsgImage.release();
+        return readImage("./temp.heic", nullptr);
     }
 
     virtual ReadResult readObject(std::istream& fin, const osgDB::ReaderWriter::Options* options = NULL) const
@@ -106,7 +107,7 @@ public:
 
     virtual ReadResult readImage(const std::string& file, const osgDB::ReaderWriter::Options* options) const
     {
-        std::string ext = osgDB::getLowerCaseFileExtension(file);
+        /*std::string ext = osgDB::getLowerCaseFileExtension(file);
         if (!acceptsExtension(ext)) return ReadResult::FILE_NOT_HANDLED;
 
         std::string fileName = osgDB::findDataFile(file, options);
@@ -115,8 +116,32 @@ public:
         osgDB::ifstream istream(fileName.c_str(), std::ios::in | std::ios::binary);
         if (!istream) return ReadResult::ERROR_IN_READING_FILE;
         ReadResult rr = readHEICStream(istream);
-        if (rr.validImage()) rr.getImage()->setFileName(file);
-        return rr;
+        if (rr.validImage()) rr.getImage()->setFileName(file);*/
+        heif_context* ctx = heif_context_alloc();
+        LIBHEIF_TEST_ERROR(heif_context_read_from_file(ctx, file.c_str(), nullptr).code, "File read error!")
+
+            // get a handle to the primary image
+            heif_image_handle* handle;
+        LIBHEIF_TEST_ERROR(heif_context_get_primary_image_handle(ctx, &handle).code, "Get image handle error")
+
+            // decode the image and convert colorspace to RGB, saved as 24bit interleaved
+            heif_image* img;
+        LIBHEIF_TEST_ERROR(heif_decode_image(handle, &img, heif_colorspace_RGB, heif_chroma_interleaved_RGB, nullptr).code, "Decode image error")
+
+            auto width = heif_image_get_primary_width(img);
+        auto height = heif_image_get_primary_height(img);
+
+        std::cout << "Get image info: " << std::endl;
+        std::cout << "width: " << width << std::endl;
+        std::cout << "height: " << height << std::endl;
+
+        int stride;
+        uint8_t* data = heif_image_get_plane(img, heif_channel_interleaved, &stride);
+        osg::ref_ptr<osg::Image> osgimage = new osg::Image;
+
+        osgimage->setImage(width, height, 1, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, data, osg::Image::USE_NEW_DELETE);
+        osgimage->flipVertical();
+        return osgimage.release();
     }
 
     virtual WriteResult writeImage(const osg::Image& img, std::ostream& fout, const osgDB::ReaderWriter::Options* options) const
