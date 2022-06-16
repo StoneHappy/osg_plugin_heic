@@ -63,7 +63,7 @@
 #define LIBHEIF_TEST_ERROR(func, ...) if ((func) != heif_error_code::heif_error_Ok) {std::cout << __VA_ARGS__ << std::endl;}
 class ReaderWriterHEIC : public osgDB::ReaderWriter
 {
-    WriteResult::WriteStatus write_JPEG_file(std::ostream& fout, const osg::Image& img, int quality = 100) const
+    WriteResult::WriteStatus write_HEIC_file(std::ostream& fout, const osg::Image& img, int quality = 100) const
     {
         std::cout << "write heic!" << std::endl;
         return WriteResult::WriteStatus::FILE_SAVED;
@@ -141,19 +141,22 @@ public:
 
         osgimage->setImage(width, height, 1, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, data, osg::Image::USE_NEW_DELETE);
         osgimage->flipVertical();
+        osgimage->setFileName(file);
         return osgimage.release();
     }
 
     virtual WriteResult writeImage(const osg::Image& img, std::ostream& fout, const osgDB::ReaderWriter::Options* options) const
     {
+        std::cout << "writeImage fout!" << std::endl;
         osg::ref_ptr<osg::Image> tmp_img = new osg::Image(img);
         tmp_img->flipVertical();
-        WriteResult::WriteStatus ws = write_JPEG_file(fout, *(tmp_img.get()), getQuality(options));
+        WriteResult::WriteStatus ws = write_HEIC_file(fout, *(tmp_img.get()), getQuality(options));
         return ws;
     }
 
     virtual WriteResult writeImage(const osg::Image& img, const std::string& fileName, const osgDB::ReaderWriter::Options* options) const
     {
+        std::cout << "writeImage filename!" << std::endl;
         std::string ext = osgDB::getFileExtension(fileName);
         if (!acceptsExtension(ext)) return WriteResult::FILE_NOT_HANDLED;
 
