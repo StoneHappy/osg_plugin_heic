@@ -64,6 +64,7 @@ class ReaderWriterHEIC : public osgDB::ReaderWriter
     WriteResult::WriteStatus write_JPEG_file(std::ostream& fout, const osg::Image& img, int quality = 100) const
     {
         std::cout << "write heic!" << std::endl;
+        return WriteResult::WriteStatus::FILE_SAVED;
     }
     int getQuality(const osgDB::ReaderWriter::Options* options) const {
         return 100;
@@ -75,9 +76,9 @@ public:
         supportsExtension("heic", "HEIC image format");
     }
 
-    virtual const char* className() const { return "JPEG Image Reader/Writer"; }
+    virtual const char* className() const { return "heic Image Reader/Writer"; }
 
-    ReadResult readJPGStream(std::istream& fin) const
+    ReadResult readHEICStream(std::istream& fin) const
     {
         std::cout << "read heic!" << std::endl;
         osg::ref_ptr<osg::Image> pOsgImage = new osg::Image;
@@ -96,7 +97,7 @@ public:
 
     virtual ReadResult readImage(std::istream& fin, const osgDB::ReaderWriter::Options* = NULL) const
     {
-        return readJPGStream(fin);
+        return readHEICStream(fin);
     }
 
     virtual ReadResult readImage(const std::string& file, const osgDB::ReaderWriter::Options* options) const
@@ -109,7 +110,7 @@ public:
 
         osgDB::ifstream istream(fileName.c_str(), std::ios::in | std::ios::binary);
         if (!istream) return ReadResult::ERROR_IN_READING_FILE;
-        ReadResult rr = readJPGStream(istream);
+        ReadResult rr = readHEICStream(istream);
         if (rr.validImage()) rr.getImage()->setFileName(file);
         return rr;
     }
