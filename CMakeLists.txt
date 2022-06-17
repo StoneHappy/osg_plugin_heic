@@ -4,7 +4,7 @@ project(osgdb_heic VERSION 0.1.0)
 
 
 option(ENABLE_TEST "Enable google test" ON)
-option(BUILD_SHARED "Enable google test" ON)
+option(BUILD_SHARED "Enable BUILDSHARED" ON)
 
 # just for qt
 # set(CMAKE_AUTOUIC ON)
