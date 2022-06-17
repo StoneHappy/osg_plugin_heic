@@ -5,7 +5,6 @@ project(osgdb_heic VERSION 0.1.0)
 
 option(ENABLE_TEST "Enable google test" ON)
 
-
 # just for qt
 # set(CMAKE_AUTOUIC ON)
 # set(CMAKE_AUTOMOC ON)
@@ -25,7 +24,7 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
   )
 endif()
 
-set(${PROJECT_NAME}_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+set(${PROJECT_NAME}_ROOT_DIR "${CMAKE_SOURCE_DIR}")
 set(CMAKE_INSTALL_PREFIX "${PROJECT_NAME}_ROOT_DIR/bin")
 set(BINARY_ROOT_DIR "${CMAKE_INSTALL_PREFIX}/")
 # static library output dir
